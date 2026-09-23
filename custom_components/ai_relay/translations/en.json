@@ -12,19 +12,23 @@
     "step": {
       "reauth_confirm": {
         "data": {
-          "api_key": "API key"
+          "api_key": "API key",
+          "base_url": "Base URL"
         },
         "data_description": {
-          "api_key": "Your OpenAI API key."
+          "api_key": "Your OpenAI API key.",
+          "base_url": "Optional base URL of an OpenAI-compatible API, for example `http://localhost:4000/v1`. Leave empty to use OpenAI."
         },
         "description": "Reauthentication required. Please enter your updated API key."
       },
       "user": {
         "data": {
-          "api_key": "API key"
+          "api_key": "API key",
+          "base_url": "Base URL"
         },
         "data_description": {
-          "api_key": "Your OpenAI API key."
+          "api_key": "Your OpenAI API key.",
+          "base_url": "Optional base URL of an OpenAI-compatible API, for example `http://localhost:4000/v1`. Leave empty to use OpenAI."
         },
         "description": "Set up OpenAI Conversation integration by providing your OpenAI API key. Instructions to obtain an API key can be found [here]({instructions_url})."
       }

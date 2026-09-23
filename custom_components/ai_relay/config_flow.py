@@ -44,6 +44,7 @@ from homeassistant.helpers.selector import (
 from homeassistant.helpers.typing import VolDictType
 
 from .const import (
+    CONF_BASE_URL,
     CONF_CHAT_MODEL,
     CONF_CODE_INTERPRETER,
     CONF_IMAGE_MODEL,
@@ -107,6 +108,9 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_API_KEY): str,
+        vol.Optional(CONF_BASE_URL): TextSelector(
+            TextSelectorConfig(type=TextSelectorType.URL)
+        ),
     }
 )
 
@@ -117,7 +121,9 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
     client = openai.AsyncOpenAI(
-        api_key=data[CONF_API_KEY], http_client=get_async_client(hass)
+        api_key=data[CONF_API_KEY],
+        base_url=data.get(CONF_BASE_URL),
+        http_client=get_async_client(hass),
     )
     await client.models.list(timeout=10.0)
 
@@ -137,6 +143,10 @@ class OpenAIConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            # Always store base_url, so (api_key, base_url) identifies an entry.
+            user_input[CONF_BASE_URL] = (
+                user_input.get(CONF_BASE_URL) or ""
+            ).strip() or None
             self._async_abort_entries_match(user_input)
             try:
                 await validate_input(self.hass, user_input)
@@ -206,7 +216,11 @@ class OpenAIConfigFlow(ConfigFlow, domain=DOMAIN):
         """Dialog that informs the user that reauth is required."""
         if not user_input:
             return self.async_show_form(
-                step_id="reauth_confirm", data_schema=STEP_USER_DATA_SCHEMA
+                step_id="reauth_confirm",
+                data_schema=self.add_suggested_values_to_schema(
+                    STEP_USER_DATA_SCHEMA,
+                    {CONF_BASE_URL: self._get_reauth_entry().data.get(CONF_BASE_URL)},
+                ),
             )
 
         return await self.async_step_user(user_input)
@@ -646,6 +660,7 @@ class OpenAISubentryFlowHandler(ConfigSubentryFlow):
         if zone_home is not None:
             client = openai.AsyncOpenAI(
                 api_key=self._get_entry().data[CONF_API_KEY],
+                base_url=self._get_entry().data.get(CONF_BASE_URL),
                 http_client=get_async_client(self.hass),
             )
             location_schema = vol.Schema(

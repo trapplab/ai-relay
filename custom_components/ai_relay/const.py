@@ -15,6 +15,7 @@ DEFAULT_STT_NAME = "AI Relay STT"
 DEFAULT_TTS_NAME = "AI Relay TTS"
 DEFAULT_NAME = "AI Relay Conversation"
 
+CONF_BASE_URL = "base_url"
 CONF_CHAT_MODEL = "chat_model"
 CONF_IMAGE_MODEL = "image_model"
 CONF_CODE_INTERPRETER = "code_interpreter"

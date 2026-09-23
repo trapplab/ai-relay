@@ -39,6 +39,7 @@ from homeassistant.helpers.httpx_client import get_async_client
 from homeassistant.helpers.typing import UNDEFINED, ConfigType, UndefinedType
 
 from .const import (
+    CONF_BASE_URL,
     CONF_CHAT_MODEL,
     CONF_FILENAMES,
     CONF_MAX_TOKENS,
@@ -282,6 +283,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bo
     """Set up OpenAI Conversation from a config entry."""
     client = openai.AsyncOpenAI(
         api_key=entry.data[CONF_API_KEY],
+        base_url=entry.data.get(CONF_BASE_URL),
         http_client=get_async_client(hass),
     )
 
@@ -326,7 +328,7 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
     if not any(entry.version == 1 for entry in entries):
         return
 
-    api_keys_entries: dict[str, tuple[OpenAIConfigEntry, bool]] = {}
+    api_keys_entries: dict[tuple[str, str | None], tuple[OpenAIConfigEntry, bool]] = {}
     entity_registry = er.async_get(hass)
     device_registry = dr.async_get(hass)
 
@@ -338,16 +340,17 @@ async def async_migrate_integration(hass: HomeAssistant) -> None:
             title=entry.title,
             unique_id=None,
         )
-        if entry.data[CONF_API_KEY] not in api_keys_entries:
+        account = (entry.data[CONF_API_KEY], entry.data.get(CONF_BASE_URL))
+        if account not in api_keys_entries:
             use_existing = True
             all_disabled = all(
                 e.disabled_by is not None
                 for e in entries
-                if e.data[CONF_API_KEY] == entry.data[CONF_API_KEY]
+                if (e.data[CONF_API_KEY], e.data.get(CONF_BASE_URL)) == account
             )
-            api_keys_entries[entry.data[CONF_API_KEY]] = (entry, all_disabled)
+            api_keys_entries[account] = (entry, all_disabled)
 
-        parent_entry, all_disabled = api_keys_entries[entry.data[CONF_API_KEY]]
+        parent_entry, all_disabled = api_keys_entries[account]
 
         hass.config_entries.async_add_subentry(parent_entry, subentry)
         conversation_entity_id = entity_registry.async_get_entity_id(
