@@ -4,9 +4,9 @@
 > 
 > AI Relay is Home Assistant's built-in
 [OpenAI integration](https://www.home-assistant.io/integrations/openai_conversation/)
-with one addition: a configurable **API base URL**. (and some additional configurations)
+with one addition: a configurable **API base URL**. (and some additional configurations exposed)
 
-That lets you point
+This integration lets you point
 conversation agents, AI tasks, speech-to-text and text-to-speech at any
 OpenAI-compatible endpoint, such as LiteLLM, Ollama, vLLM, OpenRouter, an Azure
 gateway or your own proxy.
@@ -14,17 +14,17 @@ gateway or your own proxy.
 Everything else behaves exactly like the core integration. The code is synced
 automatically from the latest stable Home Assistant Core release. This keeps the effort low to have this repository maintained.
 
-## What to expect
-- Regular updates synced automatically from Home Assistant Core.
-- New features if they appear in the stable OpenAI Integration of Home Assistant.
-- some more configurations are allowed to be added then on the original integration
-
-## What to not expect
-- Custom features (except small configuration changes)
-
 > **Unofficial fork.** AI Relay is not affiliated with, endorsed by or
 > supported by Home Assistant, Nabu Casa or OpenAI. Please report problems
 > [here](https://github.com/trapplab/ai-relay/issues), not to Home Assistant.
+> 
+## What to expect
+- Regular updates synced automatically from Home Assistant Core.
+- New features if they appear in the stable OpenAI Integration of Home Assistant.
+- Some more configurations are exposed then on the original integration
+
+## What to not expect
+- Custom features (except small configuration changes)
 
 ## Installation (HACS)
 
@@ -96,41 +96,6 @@ endpoints, see their documentation. Some self-hosted servers accept any value.
 Tested another provider? Please report the
 result in an [issue](https://github.com/trapplab/ai-relay/issues).
 
-## Maintainers
-
-### Branches
-
-- `upstream` contains only the output of `scripts/fetch_upstream.sh` and
-  `scripts/rename_to_ai_relay.py`, with one commit per Core release. Never
-  commit to it by hand.
-- `main` is `upstream` plus the base URL feature and the repository
-  infrastructure. Upstream changes come in with `git merge upstream` only. Do
-  not rebase or squash, because that breaks the merge base.
-
-### Upstream sync
-
-In the repository settings, keep **Allow merge commits** enabled. Sync pull
-requests must be merged with a merge commit.
-
-To regenerate `upstream` by hand:
-
-```sh
-tag=$(scripts/fetch_upstream.sh latest-tag)
-scripts/fetch_upstream.sh fetch "$tag" /tmp/core
-git worktree add /tmp/upstream upstream
-python3 scripts/rename_to_ai_relay.py --core /tmp/core --tag "$tag" --out /tmp/upstream
-```
-
-The repository slug and code owners used in the generated `manifest.json` are
-set at the top of `scripts/rename_to_ai_relay.py`.
-
-### Releases
-
-Push a tag `<core-version>` (e.g. `2026.9.3`), or `<core-version>-<n>` for
-fixes without an upstream change. The `version` in `manifest.json` must match
-the tag. For a `-<n>` release, change it on `main` first.
-`.github/workflows/release.yml` checks the version and attaches
-`ai_relay.zip` to a GitHub release.
 
 ## License
 
