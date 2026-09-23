@@ -1,0 +1,212 @@
+name: Upstream sync
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upstream-sync
+
+env:
+  # PAT or GitHub App token: pull requests opened with GITHUB_TOKEN do not
+  # trigger CI (S9).
+  GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
+  INTEGRATION_DIR: custom_components/ai_relay
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require SYNC_TOKEN
+        run: |
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "::error::Repository secret SYNC_TOKEN is missing, see README"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.SYNC_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check for a new core tag
+        id: check
+        run: |
+          tag="$(scripts/fetch_upstream.sh latest-tag)"
+          if ! synced="$(git show origin/upstream:.upstream-version)"; then
+            echo "::error::Branch upstream or its .upstream-version marker is missing"
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [[ "$tag" == "$synced" ]]; then
+            echo "No new core tag: $tag is already synced to upstream." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "New core tag: $synced → $tag" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update upstream branch
+        if: steps.check.outputs.new == 'true'
+        env:
+          TAG: ${{ steps.check.outputs.tag }}
+        run: |
+          core="$RUNNER_TEMP/core"
+          worktree="$RUNNER_TEMP/upstream"
+          scripts/fetch_upstream.sh fetch "$TAG" "$core"
+          git worktree add --detach "$worktree" origin/upstream
+          python3 scripts/rename_to_ai_relay.py --core "$core" --tag "$TAG" --out "$worktree"
+          if grep -rn "openai_conversation" "$worktree/custom_components/"; then
+            echo "::error::Rename left references to openai_conversation"
+            exit 1
+          fi
+          cd "$worktree"
+          git add -A
+          if git diff --cached --quiet -- custom_components; then
+            echo "Core $TAG does not change the integration; only the marker is updated." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+          git commit -m "upstream: sync openai_conversation @ $TAG"
+          git push origin HEAD:refs/heads/upstream
+          cd "$GITHUB_WORKSPACE"
+          git fetch origin
+
+      - name: Check for pending upstream changes
+        id: pending
+        run: |
+          tag="$(git show origin/upstream:.upstream-version)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          base="$(git merge-base origin/main origin/upstream)"
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          if git diff --quiet "$base" origin/upstream -- custom_components; then
+            echo "main already contains every integration change from upstream ($tag)." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "open=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # S7: at most one open sync pull request.
+          pr="$(gh pr list --state open --base main --json number,headRefName,title \
+            --jq '[.[] | select(.headRefName | startswith("sync/upstream-"))] | first // empty')"
+          if [[ -n "$pr" ]]; then
+            number="$(jq -r .number <<< "$pr")"
+            title="$(jq -r .title <<< "$pr")"
+            if [[ "$title" == *" $tag" ]]; then
+              # Leave the branch alone, a maintainer may be resolving conflicts on it.
+              echo "Pull request #$number already covers core $tag." | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "open=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "number=$number" >> "$GITHUB_OUTPUT"
+            echo "branch=$(jq -r .headRefName <<< "$pr")" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=sync/upstream-$tag" >> "$GITHUB_OUTPUT"
+          fi
+          echo "open=true" >> "$GITHUB_OUTPUT"
+
+      - name: Merge upstream and open pull request
+        if: steps.pending.outputs.open == 'true'
+        env:
+          TAG: ${{ steps.pending.outputs.tag }}
+          BASE: ${{ steps.pending.outputs.base }}
+          BRANCH: ${{ steps.pending.outputs.branch }}
+          NUMBER: ${{ steps.pending.outputs.number }}
+        run: |
+          old="$(git show origin/main:.upstream-version)"
+          compare="https://github.com/home-assistant/core/compare/$old...$TAG"
+
+          git checkout -B "$BRANCH" origin/main
+          conflicts=""
+          if ! git merge --no-ff --no-edit -m "Merge branch 'upstream' (core $TAG)" origin/upstream; then
+            conflicts="$(git diff --name-only --diff-filter=U)"
+            # S5: never commit conflict markers, never resolve automatically.
+            git merge --abort
+            git commit --allow-empty -m "Sync core $TAG: merge conflict, resolve manually"
+          fi
+          git push --force origin "HEAD:refs/heads/$BRANCH"
+
+          body="$RUNNER_TEMP/body.md"
+          {
+            echo "Updates \`$INTEGRATION_DIR\` from Home Assistant Core **$old → $TAG**."
+            echo
+            echo "Upstream changes: [\`$old...$TAG\`]($compare)"
+            echo
+            if [[ -n "$conflicts" ]]; then
+              echo "## ⚠️ Merge conflict"
+              echo
+              echo "Merging \`upstream\` into \`main\` conflicts in:"
+              echo
+              while read -r file; do echo "- \`$file\`"; done <<< "$conflicts"
+              echo
+              echo "This branch does not contain the merge yet. Resolve it locally:"
+              echo
+              echo '```sh'
+              echo "git fetch origin"
+              echo "git checkout -B $BRANCH origin/main"
+              echo "git merge origin/upstream"
+              echo "# resolve the conflicts, then:"
+              echo "git add <files>"
+              echo "git commit --no-edit"
+              echo "git push --force-with-lease origin $BRANCH"
+              echo '```'
+              echo
+            fi
+            echo "## Changed files"
+            echo
+            git diff --no-renames --name-status "$BASE" origin/upstream -- custom_components |
+              while read -r status path; do
+                file="${path#"$INTEGRATION_DIR"/}"
+                if [[ "$file" == translations/* ]]; then
+                  echo "- \`$status\` \`$file\` (generated from \`strings.json\`)"
+                else
+                  src="homeassistant/components/openai_conversation/$file"
+                  anchor="$(printf '%s' "$src" | sha256sum | cut -d' ' -f1)"
+                  echo "- \`$status\` [\`$file\`]($compare#diff-$anchor)"
+                fi
+              done
+            echo
+            echo "## Please check"
+            echo
+            echo "The base URL feature passes \`base_url=\` to every \`openai.AsyncOpenAI(...)\` call:"
+            echo "\`__init__.py\` (\`async_setup_entry\`), \`config_flow.py\` (\`validate_input\`)"
+            echo "and \`config_flow.py\` (subentry flow, \`_get_location_data\`). Calls on this branch:"
+            echo
+            echo '```'
+            grep -n -A3 "AsyncOpenAI(" "$INTEGRATION_DIR"/*.py || true
+            echo '```'
+            echo
+            echo "---"
+            echo "Opened by the upstream sync workflow; it never merges on its own."
+            echo "Merge with **Create a merge commit**. Squash or rebase breaks the merge base with \`upstream\`."
+          } > "$body"
+
+          title="Upstream sync: core $TAG"
+          gh label create merge-conflict --color B60205 \
+            --description "Upstream sync needs manual conflict resolution" --force
+          if [[ -n "$NUMBER" ]]; then
+            gh pr edit "$NUMBER" --title "$title" --body-file "$body"
+            if [[ -n "$conflicts" ]]; then
+              gh pr edit "$NUMBER" --add-label merge-conflict
+            else
+              gh pr edit "$NUMBER" --remove-label merge-conflict || true
+            fi
+            echo "Updated pull request #$NUMBER." | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            labels=()
+            if [[ -n "$conflicts" ]]; then labels=(--label merge-conflict); fi
+            gh pr create --base main --head "$BRANCH" --title "$title" \
+              --body-file "$body" "${labels[@]}"
+            echo "Opened a pull request from $BRANCH." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi

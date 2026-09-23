@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags: ["[0-9]*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check version
+        id: version
+        run: |
+          tag="$GITHUB_REF_NAME"
+          version="$tag"
+          if ! [[ "$version" =~ ^[0-9]{4}\.[0-9]{1,2}\.[0-9]+(-[0-9]+)?$ ]]; then
+            echo "::error::Tag $tag does not match <core-version>[-<n>]"
+            exit 1
+          fi
+          manifest_version="$(jq -r .version custom_components/ai_relay/manifest.json)"
+          if [[ "$manifest_version" != "$version" ]]; then
+            echo "::error::manifest.json version is $manifest_version, but the tag is $tag"
+            exit 1
+          fi
+          echo "core=$(cat .upstream-version)" >> "$GITHUB_OUTPUT"
+
+      - name: Build ai_relay.zip
+        run: |
+          cd custom_components/ai_relay
+          zip -r -X "$GITHUB_WORKSPACE/ai_relay.zip" . -x '*__pycache__*'
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CORE: ${{ steps.version.outputs.core }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" ai_relay.zip \
+            --verify-tag \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            --notes "Contains the \`openai_conversation\` integration from Home Assistant Core [$CORE](https://github.com/home-assistant/core/releases/tag/$CORE)."

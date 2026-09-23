@@ -1,0 +1,49 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hassfest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: integration
+          # Custom repositories do not need a home-assistant/brands entry.
+          ignore: brands
+
+  rename-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No references to the core domain left
+        run: |
+          if grep -rn "openai_conversation" custom_components/; then
+            echo "::error::custom_components/ still references openai_conversation"
+            exit 1
+          fi
+
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install ruff
+      # Deliberately lenient (syntax errors and undefined names only), so that
+      # upstream style never blocks a sync.
+      - run: ruff check --no-cache --isolated --select E9,F63,F7,F82 custom_components/

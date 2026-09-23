@@ -1,0 +1,16 @@
+AI Relay
+Copyright the AI Relay contributors.
+
+This product is a modified version of the "openai_conversation" integration
+of Home Assistant Core (https://github.com/home-assistant/core), licensed
+under the Apache License, Version 2.0.
+Copyright Home Assistant contributors / Nabu Casa, Inc.
+
+Modifications:
+- The integration domain was renamed from "openai_conversation" to "ai_relay"
+  and packaged as a custom component (scripts/rename_to_ai_relay.py).
+- A configurable API base URL was added so that OpenAI-compatible endpoints
+  can be used.
+
+This project is not affiliated with, endorsed by or supported by Home
+Assistant, Nabu Casa or OpenAI.
