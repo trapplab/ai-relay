@@ -1,0 +1,24 @@
+{
+  "domain": "ai_relay",
+  "name": "AI Relay",
+  "after_dependencies": [
+    "assist_pipeline",
+    "intent"
+  ],
+  "codeowners": [
+    "@trapplab"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "conversation"
+  ],
+  "documentation": "https://github.com/trapplab/ai-relay",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/trapplab/ai-relay/issues",
+  "quality_scale": "bronze",
+  "requirements": [
+    "openai==2.45.0"
+  ],
+  "version": "2026.9.3"
+}
