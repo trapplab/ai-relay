@@ -28,6 +28,11 @@ automatically from the latest stable Home Assistant Core release. This keeps the
 
 ## Installation (HACS)
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=trapplab&repository=ai-relay&category=integration)
+
+Click the button above to open AI Relay in HACS on your Home Assistant
+instance, or add it by hand:
+
 1. In HACS, open **⋮ → Custom repositories**.
 2. Add `https://github.com/trapplab/ai-relay` with the category **Integration**.
 3. Install **AI Relay** and restart Home Assistant.
@@ -74,6 +79,22 @@ endpoints, see their documentation. Some self-hosted servers accept any value.
   this step.
 - OpenAI-specific features (web search, code interpreter, image generation,
   service tiers) only work if your endpoint supports them.
+
+## Tested providers
+
+| Provider | Conversation | Speech-to-text | Text-to-speech |
+|----------|:---:|:---:|:---:|
+| OpenAI | — | — | — |
+| Kilo Gateway | ✅ | ❌ | ❌ |
+| Mistral | — | ✅ | ⚠️ |
+
+* ✅ works
+* ⚠️ endpoint is not fully OpenAI-compatible: It needs a proxy such as [LiteLLM](https://docs.litellm.ai/) that translates the requests
+* ❌ does not work
+* — not tested
+
+Tested another provider? Please report the
+result in an [issue](https://github.com/trapplab/ai-relay/issues).
 
 ## Maintainers
 
