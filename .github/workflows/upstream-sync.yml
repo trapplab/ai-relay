@@ -16,6 +16,15 @@ env:
   # trigger CI (S9).
   GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
   INTEGRATION_DIR: custom_components/ai_relay
+  # Usage: integration_changed <from> <to>. Ignores the manifest "version",
+  # which the rename script sets to the core tag and so changes every release.
+  INTEGRATION_CHANGED: |
+    integration_changed() {
+      local manifest="$INTEGRATION_DIR/manifest.json"
+      ! git diff --quiet "$1" "$2" -- "$INTEGRATION_DIR" ":!$manifest" ||
+        [[ "$(git show "$1:$manifest" | jq -S 'del(.version)')" != \
+           "$(git show "$2:$manifest" | jq -S 'del(.version)')" ]]
+    }
 
 jobs:
   sync:
@@ -76,10 +85,11 @@ jobs:
           fi
           cd "$worktree"
           git add -A
-          if git diff --cached --quiet -- custom_components; then
-            echo "Core $TAG does not change the integration; only the marker is updated." | tee -a "$GITHUB_STEP_SUMMARY"
-          fi
           git commit -m "upstream: sync openai_conversation @ $TAG"
+          eval "$INTEGRATION_CHANGED"
+          if ! integration_changed HEAD~1 HEAD; then
+            echo "Core $TAG does not change the integration; only the version marker is updated." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
           git push origin HEAD:refs/heads/upstream
           cd "$GITHUB_WORKSPACE"
           git fetch origin
@@ -91,7 +101,8 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           base="$(git merge-base origin/main origin/upstream)"
           echo "base=$base" >> "$GITHUB_OUTPUT"
-          if git diff --quiet "$base" origin/upstream -- custom_components; then
+          eval "$INTEGRATION_CHANGED"
+          if ! integration_changed "$base" origin/upstream; then
             echo "main already contains every integration change from upstream ($tag)." | tee -a "$GITHUB_STEP_SUMMARY"
             echo "open=false" >> "$GITHUB_OUTPUT"
             exit 0
