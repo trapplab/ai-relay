@@ -58,6 +58,7 @@ from .const import (
     CONF_TEMPERATURE,
     CONF_TOP_P,
     CONF_TTS_SPEED,
+    CONF_TTS_VOICES,
     CONF_VERBOSITY,
     CONF_WEB_SEARCH,
     CONF_WEB_SEARCH_CITY,
@@ -88,8 +89,10 @@ from .const import (
     RECOMMENDED_STT_OPTIONS,
     RECOMMENDED_TEMPERATURE,
     RECOMMENDED_TOP_P,
+    RECOMMENDED_TTS_MODEL,
     RECOMMENDED_TTS_OPTIONS,
     RECOMMENDED_TTS_SPEED,
+    RECOMMENDED_TTS_VOICES,
     RECOMMENDED_VERBOSITY,
     RECOMMENDED_WEB_SEARCH,
     RECOMMENDED_WEB_SEARCH_CONTEXT_SIZE,
@@ -847,12 +850,37 @@ class OpenAISubentryTTSFlowHandler(ConfigSubentryFlow):
                     TextSelectorConfig(multiline=True, type=TextSelectorType.TEXT)
                 ),
                 vol.Optional(
+                    CONF_CHAT_MODEL, default=RECOMMENDED_TTS_MODEL
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[
+                            "gpt-4o-mini-tts",
+                            "tts-1-hd",
+                            "tts-1",
+                        ],
+                        mode=SelectSelectorMode.DROPDOWN,
+                        custom_value=True,
+                    )
+                ),
+                vol.Optional(
+                    CONF_TTS_VOICES, default=RECOMMENDED_TTS_VOICES
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=RECOMMENDED_TTS_VOICES,
+                        mode=SelectSelectorMode.DROPDOWN,
+                        multiple=True,
+                        custom_value=True,
+                    )
+                ),
+                vol.Optional(
                     CONF_TTS_SPEED, default=RECOMMENDED_TTS_SPEED
                 ): NumberSelector(NumberSelectorConfig(min=0.25, max=4.0, step=0.01)),
             }
         )
 
         if user_input is not None:
+            if not user_input.get(CONF_TTS_VOICES):
+                errors[CONF_TTS_VOICES] = "no_voices"
             options.update(user_input)
             if not errors:
                 if self._is_new:

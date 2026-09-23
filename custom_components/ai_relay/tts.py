@@ -20,7 +20,13 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import CONF_CHAT_MODEL, CONF_TTS_SPEED, RECOMMENDED_TTS_SPEED
+from .const import (
+    CONF_CHAT_MODEL,
+    CONF_TTS_SPEED,
+    CONF_TTS_VOICES,
+    RECOMMENDED_TTS_SPEED,
+    RECOMMENDED_TTS_VOICES,
+)
 from .entity import OpenAIBaseLLMEntity
 
 if TYPE_CHECKING:
@@ -117,26 +123,6 @@ class OpenAITTSEntity(TextToSpeechEntity, OpenAIBaseLLMEntity):
     # The models detect the input language automatically.
     _attr_default_language = "en-US"
 
-    # https://platform.openai.com/docs/guides/text-to-speech#voice-options
-    _supported_voices = [
-        Voice(voice.lower(), voice)
-        for voice in (
-            "Marin",
-            "Cedar",
-            "Alloy",
-            "Ash",
-            "Ballad",
-            "Coral",
-            "Echo",
-            "Fable",
-            "Nova",
-            "Onyx",
-            "Sage",
-            "Shimmer",
-            "Verse",
-        )
-    ]
-
     _supported_formats = ["mp3", "opus", "aac", "flac", "wav", "pcm"]
 
     _attr_has_entity_name = False
@@ -145,6 +131,12 @@ class OpenAITTSEntity(TextToSpeechEntity, OpenAIBaseLLMEntity):
         """Initialize the entity."""
         super().__init__(entry, subentry)
         self._attr_name = subentry.title
+        self._supported_voices = [
+            Voice(
+                voice, voice.capitalize() if voice in RECOMMENDED_TTS_VOICES else voice
+            )
+            for voice in subentry.data.get(CONF_TTS_VOICES) or RECOMMENDED_TTS_VOICES
+        ]
 
     @callback
     @override

@@ -30,6 +30,7 @@ CONF_SERVICE_TIER = "service_tier"
 CONF_TEMPERATURE = "temperature"
 CONF_TOP_P = "top_p"
 CONF_TTS_SPEED = "tts_speed"
+CONF_TTS_VOICES = "tts_voices"
 CONF_VERBOSITY = "verbosity"
 CONF_WEB_SEARCH = "web_search"
 CONF_WEB_SEARCH_USER_LOCATION = "user_location"
@@ -51,7 +52,24 @@ RECOMMENDED_SERVICE_TIER = "auto"
 RECOMMENDED_STT_MODEL = "gpt-4o-mini-transcribe"
 RECOMMENDED_TEMPERATURE = 1.0
 RECOMMENDED_TOP_P = 1.0
+RECOMMENDED_TTS_MODEL = "gpt-4o-mini-tts"
 RECOMMENDED_TTS_SPEED = 1.0
+# https://platform.openai.com/docs/guides/text-to-speech#voice-options
+RECOMMENDED_TTS_VOICES = [
+    "Marin",
+    "Cedar",
+    "Alloy",
+    "Ash",
+    "Ballad",
+    "Coral",
+    "Echo",
+    "Fable",
+    "Nova",
+    "Onyx",
+    "Sage",
+    "Shimmer",
+    "Verse",
+]
 RECOMMENDED_VERBOSITY = "medium"
 RECOMMENDED_WEB_SEARCH = False
 RECOMMENDED_WEB_SEARCH_CONTEXT_SIZE = "medium"
@@ -122,7 +140,7 @@ RECOMMENDED_AI_TASK_OPTIONS = {
 RECOMMENDED_STT_OPTIONS: dict[str, Any] = {}
 RECOMMENDED_TTS_OPTIONS = {
     CONF_PROMPT: "",
-    CONF_CHAT_MODEL: "gpt-4o-mini-tts",
+    CONF_CHAT_MODEL: RECOMMENDED_TTS_MODEL,
 }
 
 UNSUPPORTED_FLEX_SERVICE_TIERS_MODELS: list[str] = [
