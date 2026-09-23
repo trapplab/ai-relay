@@ -1,4 +1,4 @@
-# AI Relay
+# <img src="custom_components/ai_relay/brand/icon.png" alt="" width="48" align="absmiddle"> AI Relay
 
 > ## TLDR;
 > 
