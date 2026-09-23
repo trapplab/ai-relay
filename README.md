@@ -1,14 +1,26 @@
 # AI Relay
 
-AI Relay is Home Assistant's built-in
+> ## TLDR;
+> 
+> AI Relay is Home Assistant's built-in
 [OpenAI integration](https://www.home-assistant.io/integrations/openai_conversation/)
-with one addition: a configurable **API base URL**. That lets you point
+with one addition: a configurable **API base URL**. (and some additional configurations)
+
+That lets you point
 conversation agents, AI tasks, speech-to-text and text-to-speech at any
 OpenAI-compatible endpoint, such as LiteLLM, Ollama, vLLM, OpenRouter, an Azure
 gateway or your own proxy.
 
 Everything else behaves exactly like the core integration. The code is synced
-automatically from the latest stable Home Assistant Core release.
+automatically from the latest stable Home Assistant Core release. This keeps the effort low to have this repository maintained.
+
+## What to expect
+- Regular updates synced automatically from Home Assistant Core.
+- New features if they appear in the stable OpenAI Integration of Home Assistant.
+- some more configurations are allowed to be added then on the original integration
+
+## What to not expect
+- Custom features (except small configuration changes)
 
 > **Unofficial fork.** AI Relay is not affiliated with, endorsed by or
 > supported by Home Assistant, Nabu Casa or OpenAI. Please report problems
