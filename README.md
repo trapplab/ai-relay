@@ -96,13 +96,17 @@ list:
   remove:                 # delete body fields, dotted paths for nested ones
     - store
     - reasoning.summary
-  set:                    # add or override body fields
+  set:                    # add or override body fields, lists are replaced
     temperature: 0.2
+  append:                 # add items to lists, keeps the existing items
+    tools:
+      - type: openrouter:web_search
   headers:                # set headers, null removes one
     X-Title: Home Assistant
 ```
 
-Rules apply in order. Within a rule, `remove` runs before `set`.
+Rules apply in order. Within a rule, `remove` runs first, then `set`, then
+`append`.
 
 ### Check whats in a request and what your rules changed
 

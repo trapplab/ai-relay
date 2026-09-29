@@ -52,12 +52,26 @@ REDACTED_HEADERS = {
     "x-api-key",
 }
 
+
+def _append_value(value: Any) -> dict[str, Any]:
+    """Validate append: nested mappings that end in lists."""
+    if not isinstance(value, dict):
+        raise vol.Invalid("append expects a mapping of lists")
+    for key, item in value.items():
+        if isinstance(item, dict):
+            _append_value(item)
+        elif not isinstance(item, list):
+            raise vol.Invalid(f"append: '{key}' must be a list")
+    return value
+
+
 RULE_SCHEMA = vol.Schema(
     {
         vol.Optional("path"): cv.string,
         vol.Optional("model"): cv.string,
         vol.Optional("remove"): vol.All(cv.ensure_list, [cv.string]),
         vol.Optional("set"): vol.Schema({cv.string: object}),
+        vol.Optional("append"): _append_value,
         vol.Optional("headers"): vol.Schema({cv.string: vol.Any(None, cv.string)}),
     }
 )
@@ -218,7 +232,7 @@ def _apply_rule(
     headers: dict[str, Any],
     client: openai.AsyncOpenAI,
 ) -> Any:
-    """Apply one rule: remove fields, then set fields and headers."""
+    """Apply one rule: remove fields, set fields, append to lists, set headers."""
     if options.method.lower() != "get":
         if body is None:
             body = {}
@@ -226,6 +240,7 @@ def _apply_rule(
             for dotted in rule.get("remove", []):
                 _remove(body, dotted.split("."))
             _deep_merge(body, rule.get("set", {}))
+            _append(body, rule.get("append", {}))
 
     for name, value in rule.get("headers", {}).items():
         # Header names are case insensitive, reuse the spelling the SDK uses.
@@ -250,6 +265,19 @@ def _deep_merge(target: dict[str, Any], updates: Mapping[str, Any]) -> None:
     for key, value in updates.items():
         if isinstance(value, Mapping) and isinstance(target.get(key), dict):
             _deep_merge(target[key], value)
+        else:
+            target[key] = copy.deepcopy(value)
+
+
+def _append(target: dict[str, Any], updates: Mapping[str, Any]) -> None:
+    """Append items to lists in target, creating missing lists."""
+    for key, value in updates.items():
+        if isinstance(value, Mapping):
+            if not isinstance(target.get(key), dict):
+                target[key] = {}
+            _append(target[key], value)
+        elif isinstance(target.get(key), list):
+            target[key].extend(copy.deepcopy(value))
         else:
             target[key] = copy.deepcopy(value)
 
@@ -280,6 +308,14 @@ def _changes(original: Any, final: Any) -> dict[str, Any]:
     removed: list[str] = []
 
     def walk(old: Any, new: Any, path: str) -> None:
+        if (
+            isinstance(old, list)
+            and isinstance(new, list)
+            and len(new) > len(old)
+            and new[: len(old)] == old
+        ):
+            added[f"{path}[+]"] = new[len(old) :]
+            return
         if not (isinstance(old, dict) and isinstance(new, dict)):
             if old != new:
                 changed[path] = {"from": old, "to": new}

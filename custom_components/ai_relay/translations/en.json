@@ -255,7 +255,7 @@
         "data_description": {
           "request_rules": "A YAML list of rules. Leave empty to send requests unchanged."
         },
-        "description": "Request rules change every request AI Relay sends, right before it is sent. A rule can be limited to an endpoint `path`, such as `/responses` or `/audio/speech`, and to a `model`; both accept `*` wildcards. `remove` deletes body fields (dotted paths such as `reasoning.summary`), then `set` adds or overrides body fields and `headers` sets headers (`null` removes a header). Rules are applied in order.\n\nRun the **Preview request** action of AI Relay to see a request with the current rules without sending it.\n\nExample:\n```yaml\n- path: /responses\n  model: \"llama*\"\n  remove:\n    - store\n    - reasoning\n  set:\n    temperature: 0.2\n  headers:\n    X-Title: Home Assistant\n```",
+        "description": "Request rules change every request AI Relay sends, right before it is sent. A rule can be limited to an endpoint `path`, such as `/responses` or `/audio/speech`, and to a `model`; both accept `*` wildcards. `remove` deletes body fields (dotted paths such as `reasoning.summary`), then `set` adds or overrides body fields (lists are replaced), `append` adds items to lists such as `tools` and `headers` sets headers (`null` removes a header). Rules are applied in order.\n\nRun the **Preview request** action of AI Relay to see a request with the current rules without sending it.\n\nExample:\n```yaml\n- path: /responses\n  model: \"llama*\"\n  remove:\n    - store\n    - reasoning\n  set:\n    temperature: 0.2\n  headers:\n    X-Title: Home Assistant\n```",
         "title": "Request rules"
       }
     }
