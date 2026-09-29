@@ -22,6 +22,7 @@ automatically from the latest stable Home Assistant Core release. This keeps the
 - Regular updates synced automatically from Home Assistant Core.
 - New features if they appear in the stable OpenAI Integration of Home Assistant.
 - Some more configurations are exposed then on the original integration
+- [Request rules](#request-rules) to add, override or remove request parameters, with a preview of the request
 
 ## What to not expect
 - Custom features (except small configuration changes)
@@ -79,6 +80,43 @@ endpoints, see their documentation. Some self-hosted servers accept any value.
   this step.
 - OpenAI-specific features (web search, code interpreter, image generation,
   service tiers) only work if your endpoint supports them.
+  
+## Adjust parameters for your needs (set, delete, overwrite)
+
+### Request rules
+
+Some endpoints reject fields that Home Assistant sends, or need extra ones.
+Request rules change every request right before it is sent. Open
+**Settings → Devices & services → AI Relay → Configure** and enter a YAML
+list:
+
+```yaml
+- path: /responses        # optional, endpoint path, * wildcards
+  model: "llama*"         # optional, model name, * wildcards
+  remove:                 # delete body fields, dotted paths for nested ones
+    - store
+    - reasoning.summary
+  set:                    # add or override body fields
+    temperature: 0.2
+  headers:                # set headers, null removes one
+    X-Title: Home Assistant
+```
+
+Rules apply in order. Within a rule, `remove` runs before `set`.
+
+### Check whats in a request and what your rules changed
+
+![Request preview](images/image.png)
+
+To see what is sent, run the action **AI Relay: Preview request** in
+**Developer tools → Actions** and pick an AI Relay entity. It builds the
+request with the entity's current settings and your rules, then returns it
+instead of sending it. `changes` lists what your rules added, changed or
+removed, and `body_without_rules` shows the request as Home Assistant built
+it. To log every request that is actually sent, enable
+debug logging for AI Relay.
+
+
 
 ## Tested providers
 

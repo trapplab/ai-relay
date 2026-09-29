@@ -105,6 +105,7 @@ from .const import (
     UNSUPPORTED_PRIORITY_SERVICE_TIERS_MODELS,
     UNSUPPORTED_WEB_SEARCH_MODELS,
 )
+from .request_overrides import RequestRulesOptionsFlow
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -241,6 +242,14 @@ class OpenAIConfigFlow(ConfigFlow, domain=DOMAIN):
             "stt": OpenAISubentrySTTFlowHandler,
             "tts": OpenAISubentryTTSFlowHandler,
         }
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: ConfigEntry,
+    ) -> RequestRulesOptionsFlow:
+        """Return the flow to edit the request rules."""
+        return RequestRulesOptionsFlow()
 
 
 class OpenAISubentryFlowHandler(ConfigSubentryFlow):

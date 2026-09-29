@@ -66,6 +66,7 @@ from .const import (
     RECOMMENDED_TTS_OPTIONS,
 )
 from .entity import async_prepare_files_for_prompt
+from .request_overrides import RelayAsyncOpenAI, async_setup_preview_service
 
 SERVICE_GENERATE_IMAGE = "generate_image"
 SERVICE_GENERATE_CONTENT = "generate_content"
@@ -275,16 +276,18 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         ),
         supports_response=SupportsResponse.ONLY,
     )
+    async_setup_preview_service(hass)
 
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: OpenAIConfigEntry) -> bool:
     """Set up OpenAI Conversation from a config entry."""
-    client = openai.AsyncOpenAI(
+    client = RelayAsyncOpenAI(
         api_key=entry.data[CONF_API_KEY],
         base_url=entry.data.get(CONF_BASE_URL),
         http_client=get_async_client(hass),
+        entry=entry,
     )
 
     # Cache current platform data which gets added to each request
