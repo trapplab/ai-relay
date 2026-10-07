@@ -1,8 +1,7 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Service is already configured",
-      "reauth_successful": "Re-authentication was successful"
+      "already_configured": "Service is already configured"
     },
     "error": {
       "cannot_connect": "Failed to connect",
@@ -21,6 +20,15 @@
         },
         "description": "Reauthentication required. Please enter your updated API key."
       },
+      "reconfigure": {
+        "data": {
+          "api_key": "API key"
+        },
+        "data_description": {
+          "api_key": "Your OpenAI API key."
+        },
+        "description": "Enter your updated OpenAI API key."
+      },
       "user": {
         "data": {
           "api_key": "API key",
@@ -37,8 +45,7 @@
   "config_subentries": {
     "ai_task_data": {
       "abort": {
-        "entry_not_loaded": "Cannot add things while the configuration is disabled.",
-        "reconfigure_successful": "Reconfiguration was successful"
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
       },
       "entry_type": "AI task",
       "error": {
@@ -101,8 +108,7 @@
     },
     "conversation": {
       "abort": {
-        "entry_not_loaded": "Cannot add things while the configuration is disabled.",
-        "reconfigure_successful": "Reconfiguration was successful"
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
       },
       "entry_type": "Conversation agent",
       "error": {
@@ -170,8 +176,7 @@
     },
     "stt": {
       "abort": {
-        "entry_not_loaded": "Cannot add things while the configuration is disabled.",
-        "reconfigure_successful": "Reconfiguration was successful"
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
       },
       "entry_type": "Speech-to-text",
       "initiate_flow": {
@@ -194,8 +199,7 @@
     },
     "tts": {
       "abort": {
-        "entry_not_loaded": "Cannot add things while the configuration is disabled.",
-        "reconfigure_successful": "Reconfiguration was successful"
+        "entry_not_loaded": "Cannot add things while the configuration is disabled."
       },
       "entry_type": "Text-to-speech",
       "error": {
@@ -224,20 +228,7 @@
       }
     }
   },
-  "exceptions": {
-    "invalid_config_entry": {
-      "message": "Invalid config entry provided. Got {config_entry}"
-    }
-  },
   "issues": {
-    "deprecated_generate_content": {
-      "description": "Action 'ai_relay.generate_content' is deprecated and will be removed in the 2026.9.0 release. Please use the 'ai_task.generate_data' action instead",
-      "title": "Deprecated 'generate_content' action"
-    },
-    "deprecated_generate_image": {
-      "description": "Action 'ai_relay.generate_image' is deprecated and will be removed in the 2026.9.0 release. Please use the 'ai_task.generate_image' action instead",
-      "title": "Deprecated 'generate_image' action"
-    },
     "organization_verification_required": {
       "description": "Your organization must be verified to use this model. Please go to {platform_settings} and select Verify Organization. If you just verified, it can take up to 15 minutes for access to propagate.",
       "title": "Organization verification required"
@@ -301,53 +292,6 @@
         "low": "Low",
         "medium": "Medium"
       }
-    }
-  },
-  "services": {
-    "generate_content": {
-      "description": "Sends a conversational query to ChatGPT including any attached image or PDF files (deprecated)",
-      "fields": {
-        "config_entry": {
-          "description": "The config entry to use for this action",
-          "name": "Config entry"
-        },
-        "filenames": {
-          "description": "List of files to upload",
-          "name": "Files"
-        },
-        "prompt": {
-          "description": "The prompt to send",
-          "name": "Prompt"
-        }
-      },
-      "name": "Generate content (deprecated)"
-    },
-    "generate_image": {
-      "description": "Turns a prompt into an image (deprecated)",
-      "fields": {
-        "config_entry": {
-          "description": "The config entry to use for this action",
-          "name": "Config entry"
-        },
-        "prompt": {
-          "description": "The text to turn into an image",
-          "example": "A photo of a dog",
-          "name": "Prompt"
-        },
-        "quality": {
-          "description": "The quality of the image that will be generated",
-          "name": "Quality"
-        },
-        "size": {
-          "description": "The size of the image to generate",
-          "name": "Size"
-        },
-        "style": {
-          "description": "The style of the generated image",
-          "name": "Style"
-        }
-      },
-      "name": "Generate image (deprecated)"
     }
   }
 }
