@@ -1,0 +1,12 @@
+preview_request:
+  fields:
+    entity_id:
+      required: true
+      selector:
+        entity:
+          integration: ai_relay
+    text:
+      example: Hello
+      selector:
+        text:
+          multiline: true
