@@ -1,7 +1,6 @@
 """The OpenAI Conversation integration."""
 
 from types import MappingProxyType
-from typing import Any, cast
 
 import openai
 
@@ -32,6 +31,7 @@ from .const import (
     RECOMMENDED_STT_OPTIONS,
     RECOMMENDED_TTS_OPTIONS,
 )
+from .request_overrides import RelayAsyncOpenAI, async_setup_preview_service
 
 PLATFORMS = (Platform.AI_TASK, Platform.CONVERSATION, Platform.STT, Platform.TTS)
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -42,6 +42,8 @@ type OpenAIConfigEntry = ConfigEntry[openai.AsyncClient]
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up OpenAI Conversation."""
     await async_migrate_integration(hass)
+
+    async_setup_preview_service(hass)
 
     return True
 
