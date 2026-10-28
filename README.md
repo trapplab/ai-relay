@@ -9,7 +9,7 @@ with one addition: a configurable **API base URL**. (and some additional configu
 This integration lets you point
 conversation agents, AI tasks, speech-to-text and text-to-speech at any
 OpenAI-compatible endpoint, such as LiteLLM, Ollama, vLLM, OpenRouter, an Azure
-gateway or your own proxy.
+gateway or your own proxy. **Checkout [here list of supported providers](#tested-providers) tested by the community.**
 
 Everything else behaves exactly like the core integration. The code is synced
 automatically from the latest stable Home Assistant Core release. This keeps the effort low to have this repository maintained.
@@ -124,19 +124,19 @@ debug logging for AI Relay.
 
 ## Tested providers
 
-| Provider | Conversation | Speech-to-text | Text-to-speech |
-|----------|:---:|:---:|:---:|
-| OpenAI | — | — | — |
-| Kilo Gateway | ✅ | ❌ | ❌ |
-| Mistral | — | ✅ | ⚠️ |
+| Provider     | Conversation | Speech-to-text | Text-to-speech | Tested by |
+| ------------ | :----------: | :------------: | :------------: | --------- |
+| OpenAI       |      —       |       —        |       —        |           |
+| Kilo Gateway |      ✅      |       ❌       |       ❌       | @trapplab |
+| Mistral      |      —       |       ✅       |       ⚠️       | @trapplab |
 
 * ✅ works
 * ⚠️ endpoint is not fully OpenAI-compatible: It needs a proxy such as [LiteLLM](https://docs.litellm.ai/) that translates the requests
 * ❌ does not work
 * — not tested
 
-Tested another provider? Please report the
-result in an [issue](https://github.com/trapplab/ai-relay/issues).
+Tested another provider? Please report the result with the
+[provider test template](https://github.com/trapplab/ai-relay/issues/new?template=provider-test.yml).
 
 
 ## License

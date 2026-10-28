@@ -1,0 +1,106 @@
+name: Provider test report
+description: Report which features of AI Relay work with a provider
+title: "[Provider test]: "
+labels: ["provider-test"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing! Fill in only what you tested and leave the rest as **Not tested**.
+        The result will be added to the *Tested providers* table in the README.
+
+  - type: input
+    id: provider
+    attributes:
+      label: Provider
+      placeholder: e.g. OpenRouter, Groq, Ollama
+    validations:
+      required: true
+
+  - type: input
+    id: base_url
+    attributes:
+      label: Base URL
+      description: Do not include API keys or other secrets.
+      placeholder: e.g. https://openrouter.ai/api/v1
+    validations:
+      required: false
+
+  - type: dropdown
+    id: conversation
+    attributes:
+      label: Conversation
+      options:
+        - Not tested
+        - Works
+        - Needs a proxy (e.g. LiteLLM)
+        - Does not work
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: conversation_model
+    attributes:
+      label: Conversation model
+      placeholder: e.g. gpt-4o-mini
+    validations:
+      required: false
+
+  - type: dropdown
+    id: stt
+    attributes:
+      label: Speech-to-text
+      options:
+        - Not tested
+        - Works
+        - Needs a proxy (e.g. LiteLLM)
+        - Does not work
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: stt_model
+    attributes:
+      label: Speech-to-text model
+      placeholder: e.g. whisper-1
+    validations:
+      required: false
+
+  - type: dropdown
+    id: tts
+    attributes:
+      label: Text-to-speech
+      options:
+        - Not tested
+        - Works
+        - Needs a proxy (e.g. LiteLLM)
+        - Does not work
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: tts_model
+    attributes:
+      label: Text-to-speech model
+      placeholder: e.g. tts-1
+    validations:
+      required: false
+
+  - type: input
+    id: versions
+    attributes:
+      label: AI Relay / Home Assistant version
+      placeholder: e.g. AI Relay 0.3.0, Home Assistant 2026.10.1
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Errors, logs, required rules or proxy setup. Remove any secrets.
+    validations:
+      required: false
