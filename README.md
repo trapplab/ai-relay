@@ -127,8 +127,8 @@ debug logging for AI Relay.
 | Provider     | Conversation | Speech-to-text | Text-to-speech | Tested by |
 | ------------ | :----------: | :------------: | :------------: | --------- |
 | OpenAI       |      —       |       —        |       —        |           |
-| Kilo Gateway |      ✅      |       ❌       |       ❌       | @trapplab |
-| Mistral      |      —       |       ✅       |       ⚠️       | @trapplab |
+| Kilo Gateway |      ✅      |       ❌       |       ❌       | [@trapplab](https://github.com/trapplab) |
+| Mistral      |      —       |       ✅       |       ⚠️       | [@trapplab](https://github.com/trapplab) |
 
 * ✅ works
 * ⚠️ endpoint is not fully OpenAI-compatible: It needs a proxy such as [LiteLLM](https://docs.litellm.ai/) that translates the requests
