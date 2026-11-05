@@ -5,10 +5,17 @@
     "assist_pipeline",
     "intent"
   ],
+  "categories": [
+    "ai_voice.ai_models",
+    "ai_voice.speech"
+  ],
   "codeowners": [
     "@trapplab"
   ],
   "config_flow": true,
+  "connectivity": [
+    "cloud"
+  ],
   "dependencies": [
     "conversation"
   ],
@@ -18,7 +25,7 @@
   "issue_tracker": "https://github.com/trapplab/ai-relay/issues",
   "quality_scale": "bronze",
   "requirements": [
-    "openai==3.10.0"
+    "openai==3.26.0"
   ],
-  "version": "2026.10.4"
+  "version": "2026.11.0"
 }
